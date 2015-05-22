@@ -1,4 +1,4 @@
-#!/usr/bin/env ruby
+      #!/usr/bin/env ruby
 
 require 'rubygems'
 require 'sinatra'
@@ -23,9 +23,17 @@ def reverse_ip(ipaddress)
 end
 
 # Authenticate all requests with an API key
-before do
+#before do
   # X-Api-Key
-  error 401 unless env['HTTP_X_API_KEY'] =~ /secret/
+#  error 401 unless env['HTTP_X_API_KEY'] =~ /secret/
+#end
+
+get '/dnsform' do
+  erb :dnsform
+end
+
+post '/dnsform' do
+  "You said '#{params[:message]}'"
 end
 
 # Manage A Records

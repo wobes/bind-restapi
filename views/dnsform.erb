@@ -1,0 +1,27 @@
+<h3>Manage A record</h3>
+<form action="/dnsform" method="post">
+  Hostname:<br>
+  <input type="text" name="hostname" size="50">
+  <br>
+  Ip Address:<br>
+  <input type="text" name="ip">
+  <br>
+  <input type="radio" name="action" value="Add" checked>Add
+  <input type="radio" name="action" value="Delete">Delete
+  <br>
+  <input type="submit">
+</form>
+<br>
+<h3>Manage CNAME</h3>
+<form action="/dnsform" method="post">
+  Hostname:<br>
+  <input type="text" name="hostname" size="50">
+  <br>
+  CNAME Alias:<br>
+  <input type="text" name="alias" size="50">
+  <br>
+  <input type="radio" name="action" value="Add" checked>Add
+  <input type="radio" name="action" value="Delete">Delete
+  <br>
+  <input type="submit">
+</form>
