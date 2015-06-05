@@ -28,12 +28,32 @@ end
 #  error 401 unless env['HTTP_X_API_KEY'] =~ /secret/
 #end
 
+helpers do
+  def common_addA (dns_params, request_params)
+    reverse_zone = reverse_ip(request_params["ip"])
+    ttl = if request_params["ttl"].nil? then dns_params[:ttl] else request_params["ttl"] end
+
+    # Add record to forward and reverse zones, via TCP
+    IO.popen("nsupdate -y #{dns_params[:rndc_key]}:#{dns_params[:rndc_secret]} -v", 'r+') do |f|
+      f << <<-EOF
+        server #{dns_params[:server]}
+        update add #{request_params["hostname"]} #{ttl} A #{request_params["ip"]}
+        send
+        update add #{reverse_zone} #{ttl} PTR #{request_params["hostname"]}
+        send
+      EOF
+      f.close_write
+    end
+  end
+end
+
 get '/dnsform' do
   erb :dnsform
 end
 
-post '/dnsform' do
-  "You said '#{params[:message]}'"
+post '/dnsformA' do
+  request_params = JSON.parse(params.to_json)
+  common_addA dns_params, request_params
 end
 
 # Manage A Records
