@@ -5,6 +5,8 @@ require 'sinatra'
 require 'json'
 require 'ipaddr'
 
+set :bind, '0.0.0.0'
+
 # curl -X POST -H 'Content-Type: application/json' -H 'X-Api-Key: secret' -d '{ "hostname": "host12.apple.com", "ip": "1.1.1.12" }' http://localhost:4567/dns
 # curl -X DELETE -H 'Content-Type: application/json' -H 'X-Api-Key: secret' -d '{ "hostname": "host12.apple.com", "ip": "1.1.1.12" }' http://localhost:4567/dns
 # curl -X POST -H 'Content-Type: application/json' -H 'X-Api-Key: secret' -d '{ "hostname": "host12.apple.com", "alias": "alias.apple.com" }' http://localhost:4567/cname
@@ -44,6 +46,11 @@ helpers do
       EOF
       f.close_write
     end
+    if $? != 0 then
+      status 500
+    else
+      status 201
+    end
   end
 end
 
@@ -53,7 +60,13 @@ end
 
 post '/dnsformA' do
   request_params = JSON.parse(params.to_json)
-  common_addA dns_params, request_params
+  if request_params["action"] == "Add" then
+    common_addA dns_params, request_params
+  elsif request_params["action"] == "Delete" then
+    "you said delete"
+    status 202 
+  end
+ "Status Code #{status} Returned"
 end
 
 # Manage A Records
