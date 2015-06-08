@@ -52,6 +52,25 @@ helpers do
       status 201
     end
   end
+
+  def common_deleteA (dns_params, request_params)
+    reverse_zone = reverse_ip(request_params["ip"])
+
+    # Remove record from forward and reverse zones, via TCP
+    IO.popen("nsupdate -y #{dns_params[:rndc_key]}:#{dns_params[:rndc_secret]} -v", 'r+') do |f|
+      f << <<-EOF
+        server #{dns_params[:server]}
+        update delete #{request_params["hostname"]} A
+        send
+        update delete #{reverse_zone} PTR
+        send
+      EOF
+      f.close_write
+    end
+    if $? != 0 then
+      status 500
+    end
+  end
 end
 
 get '/dnsform' do
@@ -63,7 +82,7 @@ post '/dnsformA' do
   if request_params["action"] == "Add" then
     common_addA dns_params, request_params
   elsif request_params["action"] == "Delete" then
-    status 202 
+    common_deleteA dns_params, request_params
   end
  "Status Code #{status} Returned"
 end
@@ -76,20 +95,7 @@ end
 
 delete '/dns' do
   request_params = JSON.parse(request.body.read)
-  reverse_zone = reverse_ip(request_params["ip"])
-
-  # Remove record from forward and reverse zones, via TCP
-  IO.popen("nsupdate -y #{dns_params[:rndc_key]}:#{dns_params[:rndc_secret]} -v", 'r+') do |f|
-    f << <<-EOF
-      server #{dns_params[:server]}
-      update delete #{request_params["hostname"]} A
-      send
-      update delete #{reverse_zone} PTR
-      send
-    EOF
-    f.close_write
-  end
-  error 500 unless $? == 0
+  common_deleteA dns_params, request_params
 end
 
 # Manage Cnames
