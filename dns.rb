@@ -71,6 +71,40 @@ helpers do
       status 500
     end
   end
+
+  def common_addCNAME (dns_params, request_params)
+    ttl = if request_params["ttl"].nil? then dns_params[:ttl] else request_params["ttl"] end
+
+    # Add CNAME to zones, via TCP
+    IO.popen("nsupdate -y #{dns_params[:rndc_key]}:#{dns_params[:rndc_secret]} -v", 'r+') do |f|
+      f << <<-EOF
+        server #{dns_params[:server]}
+        update add #{request_params["alias"]}. #{ttl} cname #{request_params["hostname"]}
+        send
+      EOF
+      f.close_write
+    end
+    if $? != 0 then
+      status 500
+    else
+      status 201
+    end
+  end
+
+  def common_deleteCNAME (dns_params, request_params)
+    # Remove CNAME record zone, via TCP
+    IO.popen("nsupdate -y #{dns_params[:rndc_key]}:#{dns_params[:rndc_secret]} -v", 'r+') do |f|
+      f << <<-EOF
+        server #{dns_params[:server]}
+        update delete #{request_params["alias"]} cname
+        send
+      EOF
+      f.close_write
+    end
+    if $? != 0 then
+      status 500
+    end
+  end
 end
 
 get '/dnsform' do
@@ -83,6 +117,16 @@ post '/dnsformA' do
     common_addA dns_params, request_params
   elsif request_params["action"] == "Delete" then
     common_deleteA dns_params, request_params
+  end
+ "Status Code #{status} Returned"
+end
+
+post '/dnsformCNAME' do
+  request_params = JSON.parse(params.to_json)
+  if request_params["action"] == "Add" then
+    common_addCNAME dns_params, request_params
+  elsif request_params["action"] == "Delete" then
+    common_deleteCNAME dns_params, request_params
   end
  "Status Code #{status} Returned"
 end
@@ -101,32 +145,10 @@ end
 # Manage Cnames
 post '/cname' do
   request_params = JSON.parse(request.body.read)
-  ttl = if request_params["ttl"].nil? then dns_params[:ttl] else request_params["ttl"] end
-
-  # Add CNAME to zones, via TCP
-  IO.popen("nsupdate -y #{dns_params[:rndc_key]}:#{dns_params[:rndc_secret]} -v", 'r+') do |f|
-    f << <<-EOF
-      server #{dns_params[:server]}
-      update add #{request_params["alias"]}. #{ttl} cname #{request_params["hostname"]}
-      send
-    EOF
-    f.close_write
-  end
-  error 500 unless $? == 0
-  status 201
+  common_addCNAME dns_params, request_params
 end
 
 delete '/cname' do
   request_params = JSON.parse(request.body.read)
-
-  # Remove CNAME record zone, via TCP
-  IO.popen("nsupdate -y #{dns_params[:rndc_key]}:#{dns_params[:rndc_secret]} -v", 'r+') do |f|
-    f << <<-EOF
-      server #{dns_params[:server]}
-      update delete #{request_params["alias"]} cname
-      send
-    EOF
-    f.close_write
-  end
-  error 500 unless $? == 0
+  common_deleteCNAME dns_params, request_params
 end
