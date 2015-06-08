@@ -1,4 +1,4 @@
-      #!/usr/bin/env ruby
+#!/usr/bin/env ruby
 
 require 'rubygems'
 require 'sinatra'
@@ -63,7 +63,6 @@ post '/dnsformA' do
   if request_params["action"] == "Add" then
     common_addA dns_params, request_params
   elsif request_params["action"] == "Delete" then
-    "you said delete"
     status 202 
   end
  "Status Code #{status} Returned"
