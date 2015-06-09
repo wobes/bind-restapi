@@ -21,11 +21,11 @@ I wrote this as a solution to enable our internal Cloud to add/remove machines t
 
 ### Add 'CNAME' record to DNS:
 
-   $ curl -v -k -u myuser:mypass -X POST -H 'Content-Type: application/json' -d '{ "hostname": "myhost1.example.com", "alias": "cname-myhost1.example.com" }' https://dnsmaster.example.com/cname
+    $ curl -v -k -u myuser:mypass -X POST -H 'Content-Type: application/json' -d '{ "hostname": "myhost1.example.com", "alias": "cname-myhost1.example.com" }' https://dnsmaster.example.com/cname
 
 ### Remove 'CNAME' record from DNS:
 
-   $ curl -v -k -u myuser:mypass -X DELETE -H 'Content-Type: application/json' -d '{ "hostname": "myhost1.example.com", "alias": "cname-myhost1.example.com" }' https://dnsmaster.example.com/cname
+    $ curl -v -k -u myuser:mypass -X DELETE -H 'Content-Type: application/json' -d '{ "hostname": "myhost1.example.com", "alias": "cname-myhost1.example.com" }' https://dnsmaster.example.com/cname
 
 ## API
 The API supports POST and DELETE methods to add and remove entries, respectively. On a successful POST a 201 is returned. On a successful DELETE a 200 is returned. Duplicate records are never created.
