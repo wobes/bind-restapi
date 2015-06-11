@@ -131,6 +131,12 @@ post '/dnsformCNAME' do
  "Status Code #{status} Returned"
 end
 
+get '/dnsformQuery' do
+  content_type :txt
+  #"#{`dig @#{params['server']} #{params['hostname']}`}"
+  "#{`host #{params['hostname']} #{params['server']}`}"
+end
+
 # Manage A Records
 post '/dns' do
   request_params = JSON.parse(request.body.read)
