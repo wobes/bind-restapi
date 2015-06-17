@@ -24,6 +24,11 @@ def reverse_ip(ipaddress)
   reverse_ip.reverse
 end
 
+# Create a audit log
+def my_logger
+  @my_logger ||= Logger.new("/var/log/bind-restapi/request.log")
+end
+
 # Authenticate all requests with an API key
 #before do
   # X-Api-Key
@@ -51,6 +56,7 @@ helpers do
     else
       status 201
     end
+    my_logger.info "User: #{env['HTTP_AUTHUSER']} Status: #{status} Request: add #{request_params["hostname"]} #{ttl} A #{request_params["ip"]}"
   end
 
   def common_deleteA (dns_params, request_params)
@@ -70,6 +76,8 @@ helpers do
     if $? != 0 then
       status 500
     end
+    my_logger.info "User: #{env['HTTP_AUTHUSER']} Status: #{status} Request: delete #{request_params["hostname"]} A"
+    my_logger.info "User: #{env['HTTP_AUTHUSER']} Status: #{status} Request: delete #{reverse_zone} PTR"
   end
 
   def common_addCNAME (dns_params, request_params)
@@ -89,6 +97,7 @@ helpers do
     else
       status 201
     end
+    my_logger.info "User: #{env['HTTP_AUTHUSER']} Status: #{status} Request: add #{request_params["alias"]}. #{ttl} cname #{request_params["hostname"]}"
   end
 
   def common_deleteCNAME (dns_params, request_params)
@@ -104,6 +113,7 @@ helpers do
     if $? != 0 then
       status 500
     end
+  my_logger.info "User: #{env['HTTP_AUTHUSER']} Status: #{status} Request: delete #{request_params["alias"]} cname"
   end
 end
 
